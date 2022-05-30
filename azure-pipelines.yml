@@ -1,0 +1,46 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: BuildDev
+  displayName: Build-dev image
+  jobs:
+  - job: Build
+    displayName: Build-dev
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'security-acr-connection'
+        repository: 'sprintacrfinaldev'
+        command: 'BuildAndPush'
+        Dockerfile: '$(Build.SourcesDirectory)/sprint/Dev-Image/Dockerfile.yml'
+        tags: |
+          $(tag)
+- stage: BuildProd
+  displayName: Build-prod image
+  jobs:
+  - job: Build
+    displayName: Build-prod
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'security-acr-connection'
+        repository: 'sprintacrfinalprod'
+        command: 'BuildAndPush'
+        Dockerfile: '$(Build.SourcesDirectory)/sprint/Prod-Image/Dockerfile.yml'
+        tags: |
+          $(tag)
